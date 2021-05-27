@@ -1,0 +1,34 @@
+#version 330 core
+
+// Input vertex data, different for all executions of this shader.
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec2 vertexUV;
+layout(location = 2) in vec3 normalVec;
+
+uniform float itime;
+
+// Output data ; will be interpolated for each fragment.
+out vec2 UV;
+out float time;
+
+// Values that stay constant for the whole mesh.
+uniform sampler2D noiseTex;
+uniform mat4 MVP;
+
+void main(){
+	vec2 copy = vertexUV;
+	copy.x += itime * 0.1;
+	copy.y += itime * 0.1;
+	vec3 c = texture(noiseTex, copy).rgb;
+
+	// Output position of the vertex, in clip space : MVP * position
+	vec3 pos = vertexPosition_modelspace - normalVec * (c.x > 0.1 ? 0 : 1);
+//	pos *= sin(itime) + 0.5;
+
+	gl_Position =  MVP * vec4(pos,1);
+	
+	// UV of the vertex. No special space for this one.
+	UV = vertexUV;
+	time = itime;
+}
+
